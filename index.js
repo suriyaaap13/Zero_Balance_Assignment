@@ -14,7 +14,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-
+/////////////////////// Route Middleware ///////////////////////
+app.use('/', require('./routes'));
 
 app.listen(3000, (err)=>{
     if(err){console.log("Error",err);}

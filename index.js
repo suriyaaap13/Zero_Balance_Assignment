@@ -1,6 +1,7 @@
 // requiring library
 require('dotenv').config();
 const express = require('express');
+const db = require('./config/mongoose');
 const bodyParser = require('body-parser');
 
 

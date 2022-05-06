@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const movieSchema = new mongoose.Schema({
     title: {
         type: String,
+        index: true,
         required: true
     },
     ratings: [{
@@ -12,10 +13,14 @@ const movieSchema = new mongoose.Schema({
             ref: 'User'
         },
         value: {
-            type: Number
+            type: Number,
+            min: 1,
+            max: 5
         }
     }]
 });
 
+movieSchema.index({ title: 'text' });
 const Movie = mongoose.model('Movie', movieSchema);
+Movie.createIndexes();
 module.exports = Movie;

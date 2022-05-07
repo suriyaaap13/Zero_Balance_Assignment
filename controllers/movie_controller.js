@@ -60,7 +60,6 @@ module.exports.rateMovie = async (req, res)=>{
         }
         // if the user has not previously rated a movie
         if(flag){
-            console.log("The updatesArray is empty");
             user.updates.push({
                 movie: movie,
                 ratings: ratingsUpdate

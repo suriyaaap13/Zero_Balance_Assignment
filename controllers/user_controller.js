@@ -67,7 +67,7 @@ module.exports.register = async (req, res)=>{
                         created_time: path.join(now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate()+'-'+withPmAm)
                     }
                 }
-                console.log(userUpdate);
+                
                 await userUpdateArray.push(userUpdate);
                 
             }else{
@@ -82,7 +82,7 @@ module.exports.register = async (req, res)=>{
                         created_time: path.join(now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate()+'-'+withPmAm)
                     }
                 }
-                console.log(userUpdate);
+                
                 await userUpdateArray.push(userUpdate);
             }
             

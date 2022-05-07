@@ -18,7 +18,37 @@ module.exports.registerValidation = (data)=>{
         age: Joi.number()
             .greater(13)
             .less(60)
-            .required()
+            .required(),
+        mv1: Joi.string()
+                .required(),
+        mv1Rating: Joi.number()
+                    .greater(0)
+                    .less(6)
+                    .required(),
+        mv2: Joi.string()
+                .required(),
+        mv2Rating: Joi.number()
+                .greater(0)
+                .less(6)
+                .required(),
+        mv3: Joi.string()
+                .required(),
+        mv3Rating: Joi.number()
+                .greater(0)
+                .less(6)
+                .required(),
+        mv4: Joi.string()
+                .required(),
+        mv4Rating: Joi.number()
+                .greater(0)
+                .less(6)
+                .required(),
+        mv5: Joi.string()
+                .required(),
+        mv5Rating: Joi.number()
+                .greater(0)
+                .less(6)
+                .required(),
     });
     return schema.validate(data);
 }

@@ -3,8 +3,10 @@ const validationController = require('./validation_controller');
 // import other npm library
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 // import user model
 const User = require('../models/user');
+const Movie = require('../models/movie');
 
 
 // Register action to register a new user
@@ -29,8 +31,67 @@ module.exports.register = async (req, res)=>{
             age: req.body.age
         });
         if(!user){return res.json({message: "bad Request", status: 400});}
+        // storing the user send movies in the database if it is not found
+        const mvArray = [ req.body.mv1, req.body.mv2, req.body.mv3, req.body.mv4, req.body.mv5];
+        const mvRatingArray = [ req.body.mv1Rating, req.body.mv2Rating, req.body.mv3Rating, req.body.mv4Rating, req.body.mv5Rating ];
+        // used to store the updates of the respective user.
+        const userUpdateArray = [];
+        // iterates through all the movies and stores the movies in the database
+        for(let index = 0; index<5; index++){
+            const userRating = {
+                by: user._id,
+                value: mvRatingArray[index]
+            }
+            // If the user has send some non capitalized data capitalize it
+            const toTitleCase = str => str.replace(/(^\w|\s\w)(\S*)/g, (_,m1,m2) => m1.toUpperCase()+m2.toLowerCase())
+            const input = toTitleCase(mvArray[index]); 
+            // searching wheather the is present/not
+            const mv = await Movie.findOne({title: input});
+            const now = new Date();
+            const withPmAm = now.toLocaleTimeString('en-US', {
+                // en-US can be set to 'default' to use user's browser settings
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+            if(!mv){
+                // If not present create a new Movie
+                const mvNew = await Movie.create({title: input});
+                mvNew.ratings.push(userRating);
+                mvNew.save();
+                const Newmv = await Movie.findById(mvNew._id);
+                // update the user updates
+                const userUpdate = {
+                    movie: Newmv,
+                    ratings: {
+                        value: mvRatingArray[index],
+                        created_time: path.join(now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate()+'-'+withPmAm)
+                    }
+                }
+                console.log(userUpdate);
+                await userUpdateArray.push(userUpdate);
+                
+            }else{
+                // If present update the users rating in the movie
+                mv.ratings.push(userRating);
+                mv.save();
+                // update the user updates
+                const userUpdate = {
+                    movie: mv,
+                    ratings: {
+                        value: mvRatingArray[index],
+                        created_time: path.join(now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate()+'-'+withPmAm)
+                    }
+                }
+                console.log(userUpdate);
+                await userUpdateArray.push(userUpdate);
+            }
+            
+        };
+        // push newly added movies to the user schema to track the history of ratings
+        const result = await User.findByIdAndUpdate(user._id, {updates: userUpdateArray});
         return res.json({message: "Registration Successful", status: 200});
     }catch(err){
+        console.log(err);
         return res.status(400).json({message: "Error in creating user try again"});;
     } 
 }

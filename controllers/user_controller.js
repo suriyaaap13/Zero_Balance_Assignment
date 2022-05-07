@@ -69,7 +69,7 @@ module.exports.login = async (req, res)=>{
         user.save();
         // create jwt and send it to the user
         const accessToken = jwt.sign({_id: user._id}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30min' });
-        return res.header('auth-token', accessToken).status(200).json({message: "Login Successful", accessToken: accessToken, name: user.name});
+        return res.header('auth-token', accessToken).status(200).json({message: "Login Successful", accessToken: accessToken, User: user});
         
     }catch(err){
         console.log(err);

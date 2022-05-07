@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const Movie = require('../models/movie');
 const mongoose = require('mongoose');
+const path = require('path');
 
 // sends the locally stored movie list
 module.exports.movieList = async (req, res)=>{
@@ -10,6 +11,7 @@ module.exports.movieList = async (req, res)=>{
     });
 }
 
+// Action to rate a movie
 module.exports.rateMovie = async (req, res)=>{
     if(req.body.rating>5||req.body.rating<=0){
         res.status(400).json({message: "Invalid rating, add value between 1 to 5"});
@@ -32,6 +34,43 @@ module.exports.rateMovie = async (req, res)=>{
             by: user,
             value: req.body.rating
         }
+        // Storing the history of rating of the user for the respective post
+        const now = new Date();
+        const withPmAm = now.toLocaleTimeString('en-US', {
+            // en-US can be set to 'default' to use user's browser settings
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+        const ratingsUpdate = {
+            value: req.body.rating,
+            created_time: path.join(now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate()+'-'+withPmAm)
+        }
+        const updatesArray = user.updates;
+        let flag = 1;
+        // iterating through the updates array and finding whether we can find the match of the post
+        // that the user is rating.
+        for(let i of updatesArray){
+            if(i.movie.valueOf()===req.params.id){
+                flag = 0;
+                // pulling the while updates section from the user schema
+                const temp = await User.findByIdAndUpdate(req.user._id, {$pull: {updates: {_id: i._id}}});
+                // pushing the updated values to the correct movie
+                i.ratings.push(ratingsUpdate);
+            }
+        }
+        // if the user has not previously rated a movie
+        if(flag){
+            console.log("The updatesArray is empty");
+            user.updates.push({
+                movie: movie,
+                ratings: ratingsUpdate
+            });
+            user.save();
+        }else{
+            // if the use have previously rated the movie then 
+            // update the database with the current updated updates array.
+            const newUser = await User.findByIdAndUpdate(req.user._id, {updates: updatesArray});
+        }
         // pushing the update to the database and saving it
         await movie.ratings.push(newValue);
         await movie.save();
@@ -43,9 +82,9 @@ module.exports.rateMovie = async (req, res)=>{
         console.log("Error ", err);
         res.status(400).json({message: "Invalid Input check Movie ID/body "});
     }
-    
 }
 
+// Action for an open list that show all the movie and its respective ratings.
 module.exports.openList = async (req, res)=>{
     // fetching all the movies
     const movies = await Movie.find({});
@@ -67,6 +106,7 @@ module.exports.openList = async (req, res)=>{
     res.status(200).json(display);
 }
 
+// Action that allows the user to search the movies
 module.exports.search = async (req, res)=>{
     try{
         const movie = await Movie.findOne({title: req.body.movie});
